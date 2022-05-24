@@ -2,7 +2,6 @@
 
 using namespace std;
 
-struct Queue {short node; Queue* prev; Queue* next;};
 const short int LEASTNODES = 50;
 
 Graph::Graph(short int nodes)
@@ -10,7 +9,7 @@ Graph::Graph(short int nodes)
     if (nodes >= LEASTNODES)
     {
         totalNodes = nodes;
-        initialiseVariables(nodes);
+        initialiseVariables();
     }
     else
     {
@@ -107,16 +106,25 @@ inline void unlinkNodes(short node1, short node2)
 
 
 //initialises all the pointer variables in private
-void initialiseVariables(short int matrixSize)
+void initialiseVariables()
 {
-    matrix.resize(matrixSize);
-    cost.resize(matrixSize);
-    nodeValue.resize(matrixSize, 0);
-    for (int i = 0; i < matrixSize; ++i)
+    matrix.resize(totalNodes);
+    cost.resize(totalNodes);
+    nodeValue.resize(totalNodes, 0);
+    for (int i = 0; i < totalNodes; ++i)
     {
-        matrix[i].resize(matrixSize, false);
-        cost[i].resize(matrixSize, false);
+        matrix[i].resize(totalNodes, false);
+        cost[i].resize(totalNodes, false);
     }
+}
+
+Graph::PriorityQueue::PriorityQueue(short node, short priority)
+{
+            PQ.push_back(node);
+            graph.setNodeValue(node, priority);
+
+            inPQ.resize(totalNodes, false);
+            inPQ[node] = true;
 }
 
 Graph::~Graph()

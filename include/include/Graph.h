@@ -44,7 +44,7 @@ class Graph
         inline void unlinkNodes(short node1, short node2);
 
         //initialises all the pointer variables in private
-        void initialiseVariables(short int matrixSize);
+        void initialiseVariables();
 
         //sets the value associated to the edge(x,y) to v
         inline void setEdgeValue(short x, short y, short v){cost[x][y] = v; cost[y][x] = v;}
@@ -53,9 +53,12 @@ class Graph
         inline void setNodeValue(short x, short a){nodeValue[x] = a;}
 
 
-        //Minimum Spanning Tree
-        friend prim(MatrixGraph& graph);
-        friend kruskal(MatrixGraph& graph);
+        //Minimum Spanning Tree algorithms(returns the minimum cost it takes to traverse all the nodes in a graph)
+        friend prim(Graph& graph);
+        friend kruskal(Graph& graph);
+
+        //shortest path algorithm(returns the least cost to go from one node to another)
+        friend djikstra (Graph& graph);
 
         //Destructor
         virtual ~Graph();
@@ -63,10 +66,6 @@ class Graph
         class PriorityQueue
         {
             public:
-                //friends
-                friend prim(MatrixGraph& graph);
-                friend kruskal(MatrixGraph& graph);
-
                 //initialise elements
                 PriorityQueue(short node, short priority);
 
@@ -83,6 +82,13 @@ class Graph
                 bool chgPriority(Graph& graph, short node, short priority);
                 //removes the top element of the queue
                 short minPriority();
+
+                //Minimum Spanning Tree algorithms(returns the minimum cost it takes to traverse all the nodes in a graph)
+                friend prim(Graph& graph);
+                friend kruskal(Graph& graph);
+
+                //shortest path algorithm(returns the least cost to go from one node to another)
+                friend djikstra (Graph& graph);
 
             protected:
                 vector<bool> inPQ;
