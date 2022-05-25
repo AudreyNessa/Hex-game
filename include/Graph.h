@@ -13,8 +13,8 @@ class Graph
 {
     public:
         //constructors
-        Graph(short int nodes):linksCreated(new PtrLinks);
-        Graph(short noNodes, double density):linksCreated(new PtrLinks);
+        Graph(short int nodes);
+        Graph(short noNodes, double density);
 
         //accessors
         inline short getTotalNodes() const{return totalNodes;} //returns the number of vertices
@@ -27,13 +27,14 @@ class Graph
         inline bool adjacent(short node1, short node2) const{return matrix[node1][node2];}
 
         //list all nodes that have and edge with a node x
-        vector<short> neighbours (short x);
+        vector<short> neighbours (short x) const;
 
         //gets the value associated with the edge node1, node2
         inline short getEdgeValue(short node1, short node2) const{return cost[node1][node2];}
 
         //returns the value associated with the node x
         inline short getNodeValue(short node1) const {return nodeValue[node1];}
+
 
         //mutators
 
@@ -52,13 +53,8 @@ class Graph
         //sets the value associated with the node
         inline void setNodeValue(short x, short a){nodeValue[x] = a;}
 
-
-        //Minimum Spanning Tree algorithms(returns the minimum cost it takes to traverse all the nodes in a graph)
-        friend prim(Graph& graph);
-        friend kruskal(Graph& graph);
-
-        //shortest path algorithm(returns the least cost to go from one node to another)
-        friend djikstra (Graph& graph);
+        //shortest path algorithm(returns the least cost to go from one node to another) using djikstra's algorithm
+        shortestPath(short node1, short node);
 
         //Destructor
         virtual ~Graph();
@@ -70,8 +66,8 @@ class Graph
                 PriorityQueue(short node, short priority);
 
                 /* ################################## ACCESSOR METHODS #######################*/
-                inline short top() const {return PQ.front()}
-                inline short sizePQ() const {return PQ.size()}
+                short top() const {return PQ.front()}
+                short sizePQ() const {return PQ.size()}
                 inline list<short> getQueue() const {return PQ;}
 
                 /* ########################## MUTATOR METHODS #########################*/
@@ -79,13 +75,10 @@ class Graph
                 //also adds to the queue a new element
                 //returns true if the element has a new parent node
                 //happens when the new priority for a node is less than the existing one in the queue
-                bool chgPriority(Graph& graph, short node, short priority);
-                //removes the top element of the queue
-                short minPriority();
+                bool chgPriority(short node, short priority);
 
-                //Minimum Spanning Tree algorithms(returns the minimum cost it takes to traverse all the nodes in a graph)
-                friend prim(Graph& graph);
-                friend kruskal(Graph& graph);
+                //removes the top element of the queue and returns the value
+                short minPriority();
 
                 //shortest path algorithm(returns the least cost to go from one node to another)
                 friend djikstra (Graph& graph);
@@ -95,6 +88,7 @@ class Graph
                 list<short> PQ;
 
         };
+
 
     protected:
         short int totalNodes;
