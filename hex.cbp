@@ -35,8 +35,10 @@
 			<Add option="-fexceptions" />
 		</Compiler>
 		<Unit filename="include/Graph.h" />
+		<Unit filename="include/Hex.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="src/Graph.cpp" />
+		<Unit filename="src/Hex.cpp" />
 		<Extensions>
 			<code_completion />
 			<envvars />
