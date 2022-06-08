@@ -1,6 +1,6 @@
 #include "Graph.h"
 
-using namespace std;
+//using namespace std;
 
 const short int LEASTNODES = 50;
 
@@ -68,8 +68,7 @@ short Graph::getEdges() const
     return noEdges;
 }
 
-//list all nodes that have an edge with node x
-vector<short> Graph::neighbours (short x)
+vector<short> Graph::neighbours (short x) const
 {
     vector<short> xEdges;
     for (short i = 0; i < Graph::totalNodes; ++i)
@@ -80,7 +79,6 @@ vector<short> Graph::neighbours (short x)
     return xEdges;
 }
 
-//adds an edge from node1 to node2 if it's not there
 inline void Graph::linkNodes(short node1, short node2)
 {
     switch (Graph::matrix[node1][node2])
@@ -104,8 +102,6 @@ inline void Graph::unlinkNodes(short node1, short node2)
     }
 }
 
-
-//initialises all the pointer variables in private
 void Graph::initialiseVariables()
 {
     Graph::matrix.resize(Graph::totalNodes);
@@ -114,20 +110,17 @@ void Graph::initialiseVariables()
     for (int i = 0; i < Graph::totalNodes; ++i)
     {
         Graph::matrix[i].resize(Graph::totalNodes, false);
-        Graph::cost[i].resize(Graph::totalNodes, false);
+        Graph::cost[i].resize(Graph::totalNodes, 0);
     }
 }
 
-Graph::PriorityQueue::PriorityQueue(short node, short priority)
-{
-            Graph::PriorityQueue::PQ.push_back(node);
-            Graph::setNodeValue(node, priority);
 
-            Graph::PriorityQueue::inPQ.resize(Graph::totalNodes, false);
-            Graph::PriorityQueue::inPQ[node] = true;
+Graph::PriorityQueue::PriorityQueue(Graph& graph) : PQgraph(graph)
+{
+    Graph::PriorityQueue::inPQ.resize(Graph::PriorityQueue::PQgraph.totalNodes, false);
 }
 
-Graph::PriorityQueue::chgPriority(short node, short priority)
+bool Graph::PriorityQueue::chgPriority(short node, short priority)
 {
     bool addedToPQ = false;
     bool parentChanged = false;
@@ -138,7 +131,7 @@ Graph::PriorityQueue::chgPriority(short node, short priority)
         if (!Graph::PriorityQueue::inPQ[node])
         {
             Graph::PriorityQueue::PQ.push_back(node);
-            Graph::setNodeValue(node, priority);
+            Graph::PriorityQueue::PQgraph.setNodeValue(node, priority);
             Graph::PriorityQueue::inPQ[node] = true;
         }
 
@@ -148,20 +141,23 @@ Graph::PriorityQueue::chgPriority(short node, short priority)
     or it hasn't been added do the priority queue, set the priority and add to the
     queue in ascending order else end
     */
-    else if ((Graph::PriorityQueue::inPQ[node] && Graph::getNodeValue(node) > priority) || !Graph::PriorityQueue::inPQ[node])
+    else if ((Graph::PriorityQueue::inPQ[node] && Graph::PriorityQueue::PQgraph.getNodeValue(node) > priority) || !Graph::PriorityQueue::inPQ[node])
     {
 
         //set the new priority
-        Graph::setNodeValue(node, priority);
+        Graph::PriorityQueue::PQgraph.setNodeValue(node, priority);
 
         //add to the appropriate place in the priority queue in ascending order
 
         auto cursor = Graph::PriorityQueue::PQ.begin();
+        auto temp = cursor;
 
-        //user cursor+1 to keep track of the of the priority queue.
-        //If cursor is used instead, when it's a null pointer there is no way to get the previous element
-        while ((cursor+1) != Graph::PriorityQueue::PQ.end())
+        //user cursor to keep track of the of the priority queue.
+        //use ++cursor to keep track of the last value in the priority queue
+        while ((++cursor) != Graph::PriorityQueue::PQ.end())
         {
+            cursor = temp;
+
             //delete the node if was already in the priority queue
             if (*cursor == node)
             {
@@ -180,16 +176,18 @@ Graph::PriorityQueue::chgPriority(short node, short priority)
                 }
 
             }
-            else if (!addedToPQ && graph.getNodeValue(*cursor) > priority)
+            else if (!addedToPQ && Graph::PriorityQueue::PQgraph.getNodeValue(*cursor) > priority)
             {
                 Graph::PriorityQueue::PQ.insert(cursor, node);
                 addedToPQ = true;
                 Graph::PriorityQueue::inPQ[node] = true;
 
             }
-            ++cursor;
+            temp = ++cursor;
         }
+
         //if the last node in the priority queue is the same as the node already added PQ, delete
+        cursor = temp;
         if (*cursor == node && !parentChanged)
         {
             parentChanged = true;
@@ -206,7 +204,7 @@ Graph::PriorityQueue::chgPriority(short node, short priority)
         {
             if (*cursor != node)
             {
-                if (graph.getNodeValue(*cursor) > priority)
+                if (Graph::PriorityQueue::PQgraph.getNodeValue(*cursor) > priority)
                 {
                     Graph::PriorityQueue::PQ.insert(cursor, node);
                 }
@@ -226,8 +224,12 @@ Graph::PriorityQueue::chgPriority(short node, short priority)
 
 short Graph::PriorityQueue::minPriority()
 {
-    short firstNode = Graph::PriorityQueue::PQ.front();
-    PQ.pop_front();
+    short firstNode = Graph::PriorityQueue::END;
+    if (!PQ.empty())
+    {
+        firstNode = Graph::PriorityQueue::PQ.front();
+        PQ.pop_front();
+    }
     return firstNode;
 }
 
@@ -235,3 +237,69 @@ Graph::~Graph()
 {
     //dtor
 }
+
+
+short shortestPath(Graph& graph, short node1, short node2)
+{
+    vector<bool> isOpen(graph.totalNodes, false);
+    vector<bool> isClosed(graph.totalNodes, false);
+    vector<short> parentNodes(graph.totalNodes, -1);
+    isClosed[node1] = true;//add to the closed set
+    short newPriority; //gets the element at the top of the list
+
+    //get the neighbours of a parent node
+    vector<short> neighbour;
+    short parentNode = node1; //recent node added to the closed set
+    Graph::PriorityQueue newQueue(graph);
+    void addToOpen(Graph&, vector<short>&, Graph::PriorityQueue&, short, vector<bool>&, vector<bool>&, vector<short>&);
+
+
+    while (!isClosed[node2])
+    {
+        //get the neighbours of of the new parent node
+        neighbour = graph.neighbours(parentNode);
+
+        //add neighbours to the open set and priority queue if not in closed set
+        addToOpen(graph, neighbour, newQueue, parentNode, isOpen, isClosed, parentNodes);
+
+        //add the first element in the queue to the closed set
+        newPriority = newQueue.minPriority();
+        if (newPriority == newQueue.END)
+            break;
+        isClosed[newPriority] = true;
+        parentNode = newPriority;
+    }
+
+    if (isClosed[node2])
+        return graph.getNodeValue(node2);
+    else
+        return 0;
+
+}
+
+ //adds a list of edges connected to a node to the open set and priority queue
+void addToOpen(Graph& graph, vector<short>& neighbour, Graph::PriorityQueue& PQ, short parentNode, vector<bool>& isOpen, vector<bool>& isClosed, vector<short>& parentNodes)
+{
+    short totalCost; // total cost from a source to a particular node
+    short parentCost = graph.getNodeValue(parentNode); //cost from source to the parent node
+    bool parentChanged = false;
+
+    //add the remaining neighbours to the open set and priority queue
+    for (short node : neighbour)
+    {
+        if (!isClosed[node])
+        {
+            //set the priority to the total cost from the source to a particular node
+            totalCost = parentCost + graph.getEdgeValue(parentNode, node);
+
+            //set the parent nodes for the neighbours
+            parentChanged = PQ.chgPriority(node, totalCost);
+            if (!isOpen[node] || parentChanged)
+            {
+                parentNodes[node] = parentNode;
+            }
+            isOpen[node] = true;
+        }
+    }
+}
+

@@ -1,0 +1,26 @@
+# depslib dependency file v1.0
+1654684019 source:c:\users\nessa\documents\it\c programs\newhex\hex-game\main.cpp
+	<iostream>
+	"Hex.h"
+
+1654581817 c:\users\nessa\documents\it\c programs\newhex\hex-game\include\graph.h
+	<algorithm>
+	<array>
+	<ctime>
+	<cassert>
+	<iostream>
+	<list>
+	<random>
+	<vector>
+
+1654083767 source:c:\users\nessa\documents\it\c programs\newhex\hex-game\src\graph.cpp
+	"Graph.h"
+
+1654683993 c:\users\nessa\documents\it\c programs\newhex\hex-game\include\hex.h
+	<map>
+	<tuple>
+	"Graph.h"
+
+1654684088 source:c:\users\nessa\documents\it\c programs\newhex\hex-game\src\hex.cpp
+	"Hex.h"
+

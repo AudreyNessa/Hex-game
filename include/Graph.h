@@ -2,6 +2,7 @@
 #define GRAPH_H
 
 #include <algorithm>
+#include <array>
 #include <ctime>
 #include <cassert>
 #include <iostream>
@@ -9,16 +10,18 @@
 #include <random>
 #include <vector>
 
+using namespace std;
+
 class Graph
 {
     public:
         //constructors
-        Graph(short int nodes);
-        Graph(short noNodes, double density);
+        Graph(short int);
+        Graph(short, double);
 
         //accessors
         inline short getTotalNodes() const{return totalNodes;} //returns the number of vertices
-        inline bool** getMatrix() const{return matrix;} //returns the whole matrix
+        inline vector<vector<bool>> getMatrix() const{return matrix;} //returns the whole matrix
 
         //returns the number of edges in the graph
         short getEdges() const;
@@ -44,7 +47,7 @@ class Graph
         //removes the edge from node1 to node2 if it's there
         inline void unlinkNodes(short node1, short node2);
 
-        //initialises all the pointer variables in private
+        //initialises all the variables in the graph class
         void initialiseVariables();
 
         //sets the value associated to the edge(x,y) to v
@@ -53,8 +56,9 @@ class Graph
         //sets the value associated with the node
         inline void setNodeValue(short x, short a){nodeValue[x] = a;}
 
-        //shortest path algorithm(returns the least cost to go from one node to another) using djikstra's algorithm
-        shortestPath(short node1, short node);
+        //returns the least cost it takes to go from one node to another using djikstra's algorithm
+        //returns 0 if there is no path from node1 to node2
+        friend short shortestPath(Graph&, short, short);
 
         //Destructor
         virtual ~Graph();
@@ -63,11 +67,11 @@ class Graph
         {
             public:
                 //initialise elements
-                PriorityQueue(short node, short priority);
+                PriorityQueue(Graph&);
 
                 /* ################################## ACCESSOR METHODS #######################*/
-                short top() const {return PQ.front()}
-                short sizePQ() const {return PQ.size()}
+                short top() const {return PQ.front();}
+                short sizePQ() const {return PQ.size();}
                 inline list<short> getQueue() const {return PQ;}
 
                 /* ########################## MUTATOR METHODS #########################*/
@@ -75,17 +79,19 @@ class Graph
                 //also adds to the queue a new element
                 //returns true if the element has a new parent node
                 //happens when the new priority for a node is less than the existing one in the queue
-                bool chgPriority(short node, short priority);
+                bool chgPriority(short, short);
 
                 //removes the top element of the queue and returns the value
                 short minPriority();
 
-                //shortest path algorithm(returns the least cost to go from one node to another)
-                friend djikstra (Graph& graph);
+                //a sentinel value to indicate the end of a queue
+                const short END = -1;
+                list<short> PQ;
 
             protected:
+                Graph& PQgraph;
                 vector<bool> inPQ;
-                list<short> PQ;
+
 
         };
 
@@ -93,8 +99,10 @@ class Graph
     protected:
         short int totalNodes;
         vector<vector<bool>> matrix;
-        vector<vector<bool>> cost;
+        vector<vector<short>> cost;
         vector<short> nodeValue;
+
+
 
     private:
 };
