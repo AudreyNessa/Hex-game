@@ -54,7 +54,7 @@ Graph::Graph(short noNodes, double density)
 
 }
 
-short Graph::getEdges() const
+short Graph::getNoEdges() const
 {
     short noEdges = 0; //counts the number of edges
     for (int i = 0; i < Graph::totalNodes; ++i)
@@ -252,7 +252,6 @@ short shortestPath(Graph& graph, short node1, short node2)
     short parentNode = node1; //recent node added to the closed set
     Graph::PriorityQueue newQueue(graph);
     void addToOpen(Graph&, vector<short>&, Graph::PriorityQueue&, short, vector<bool>&, vector<bool>&, vector<short>&);
-
 
     while (!isClosed[node2])
     {

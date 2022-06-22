@@ -24,7 +24,7 @@ class Graph
         inline vector<vector<bool>> getMatrix() const{return matrix;} //returns the whole matrix
 
         //returns the number of edges in the graph
-        short getEdges() const;
+        short getNoEdges() const;
 
         //tests whether there's an edge from node1 to node2
         inline bool adjacent(short node1, short node2) const{return matrix[node1][node2];}
@@ -51,7 +51,7 @@ class Graph
         void initialiseVariables();
 
         //sets the value associated to the edge(x,y) to v
-        inline void setEdgeValue(short x, short y, short v){cost[x][y] = v; cost[y][x] = v;}
+        inline void setEdgeValue(short x, short y, short v){matrix[x][y] = true; matrix[y][x] = true; cost[x][y] = v; cost[y][x] = v;}
 
         //sets the value associated with the node
         inline void setNodeValue(short x, short a){nodeValue[x] = a;}

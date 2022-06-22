@@ -24,7 +24,7 @@ class Hex : public Graph
         inline void setComputerMode(Board b){computerMode = b;}
 
         //adds a move for the player
-        inline void addPlayerMove(point);
+        void addPlayerMove(point);
 
         //getters
 
@@ -44,8 +44,8 @@ class Hex : public Graph
         //checks if a player makes a valid move and returns true if valid
         bool validMove(point);
 
-        //checks if a player has won a match and returns true if won
-        bool won();
+        //returns the player(black or red) that won the match and returns free if no one has one
+        Board whoWon();
 
         //makes the AI play a valid move on the board
         void computerPlay();
@@ -57,6 +57,7 @@ class Hex : public Graph
         Board playerMode; // the mode of the players(red or black)
         Board computerMode; //the mode of the computer(red or black)
         vector<vector<bool>>hexNeighbours; //the neighbours of a node on the hex board
+        vector<vector<bool>>hexHasEdge;
         vector<point> player; // moves played by the player
         vector<point> computer; //moves played by the computer
         vector<Board> moves; //moves already played
@@ -73,13 +74,8 @@ class Hex : public Graph
         template<class Iter>
         void print(Iter, Iter);
 
-        bool checkLinked(vector<short>&, Board);
-        bool dijkstra(vector<short>&, short, Board);
-
-
-
-        short monteCarlo();
-        void fillBoard(vector<short>,vector<short>&, short);
+        //checks if a player made a path from the north to south or east to west on the hex board
+        bool checkLinked(const vector<short>&, const vector<short>&);
 
 
     private:
