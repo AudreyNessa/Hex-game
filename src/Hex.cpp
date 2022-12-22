@@ -1,4 +1,5 @@
 #include "Hex.h"
+#include <cassert>
 
 ostream& operator<<(ostream& out, const Board& b)
 {
@@ -23,7 +24,7 @@ Hex::Hex(short num) : Graph(num*num), matrixSize(num)
     Hex::hexHasEdge.resize(totalNodes);
 
     //Set the neighbouring nodes of each node to true of the hex game(bidirectional graph)
-    for (short i = 0; i < totalNodes; ++i)
+    for (short i = 0; i < Hex::totalNodes; ++i)
     {
         Hex::hexNeighbours[i].assign(totalNodes, false);
         Hex::hexHasEdge[i].assign(totalNodes, false);
@@ -68,32 +69,73 @@ Hex::Hex(short num) : Graph(num*num), matrixSize(num)
 
 }
 
-void Hex::addPlayerMove(point p)
+Hex::Hex(const Hex& game) : Graph(static_cast<Graph>(game))
+{
+    Hex::player = game.player;
+    Hex::computer = game.computer;
+    Hex::moves = game.moves;
+    Hex::playerMode = game.playerMode;
+    Hex::computerMode = game.computerMode;
+    Hex::hexHasEdge = game.hexHasEdge;
+    Hex::hexNeighbours = game.hexNeighbours;
+    Hex::matrixSize = game.matrixSize;
+
+}
+
+void Hex::addMove(Hex& game, Board mode, point p)
 {
     if (validMove(p))
     {
-        //add to graph neighbours if the move is a neighbour of any of the previous moves;
-        const short EMPTY = 0;
-        const short PLAYER_SIZE = player.size(); //number of moves made by the player
-        short node = convertToNode(matrixSize, p); //convert the point to nodes and add to moves
-
-        //if there is the player has made more than one move check if the last move is a neighbour to any of the previous moves
-        if (PLAYER_SIZE > EMPTY)
+        if (mode == game.playerMode)
         {
-            for (point m : player)
+            //add to graph neighbours if the move is a neighbour of any of the previous moves;
+            const short EMPTY = 0;
+            const short PLAYER_SIZE = game.player.size(); //number of moves made by the player
+            short node = convertToNode(matrixSize, p); //convert the point to nodes and add to moves
+
+            //if the player has made more than one move check if the last move is a neighbour to any of the previous moves
+            if (PLAYER_SIZE > EMPTY)
             {
-                //convert the point m to its equivalent node value
-                short nodePlayed = convertToNode(matrixSize, m);
-                if(hexHasEdge[nodePlayed][node])
+                for (point m : game.player)
                 {
-                    Graph::setEdgeValue(nodePlayed, node, 1);
+                    //convert the point m to its equivalent node value
+                    short nodePlayed = convertToNode(matrixSize, m);
+                    if(game.hexHasEdge[nodePlayed][node])
+                    {
+                        game.setEdgeValue(nodePlayed, node, 1);
+                    }
                 }
             }
-        }
 
-        //add the move to player and moves
-        player.push_back(p);
-        moves[node] = playerMode;
+            //add the move to player and moves
+            game.player.push_back(p);
+            game.moves[node] = game.playerMode;
+        }
+        else
+        {
+            //add to graph neighbours if the move is a neighbour of any of the previous moves;
+            const short EMPTY = 0;
+            const short COMPUTER_SIZE = game.computer.size(); //number of moves made by the computer
+            short node = convertToNode(matrixSize, p); //convert the point to nodes and add to moves
+
+            //if the computer has made more than one move check if the last move is a neighbour to any of the previous moves
+            if (COMPUTER_SIZE > EMPTY)
+            {
+                for (point m : game.computer)
+                {
+                    //convert the point m to its equivalent node value
+                    short nodePlayed = convertToNode(matrixSize, m);
+                    if(game.hexHasEdge[nodePlayed][node])
+                    {
+                        game.setEdgeValue(nodePlayed, node, 1);
+                    }
+                }
+            }
+
+            //add the move to computer and moves
+            game.computer.push_back(p);
+            game.moves[node] = game.computerMode;
+        }
 
     }
 }
@@ -183,121 +225,119 @@ bool Hex::validMove(point playerMove)
     return false;
 }
 
-Board Hex::whoWon()
+Board Hex::whoWon(Hex& game, const vector<point>& playerMoves, const vector<point>& computerMoves)
 {
-    //add all the moves made at the edges and vertices of the board
+    //stores the moves made at the edges of the board
     vector<short> playerStartMoves;
     vector<short> computerStartMoves;
     vector<short> playerEndMoves;
     vector<short> computerEndMoves;
 
-    //check if a move was made at the edges or vertices of the board
-    bool playerBeginX = false;
-    bool playerBeginY = false;
-    bool playerEndX = false;
-    bool playerEndY = false;
-    bool computerBeginX = false;
-    bool computerBeginY = false;
-    bool computerEndX = false;
-    bool computerEndY = false;
+    //checks if a move was made at the edges or vertices of the board
+    bool playerBegin = false;
+    bool playerEnd = false;
+    bool computerBegin = false;
+    bool computerEnd = false;
 
-
-    //get all the moves played by both players and check if there's a move played at the beginning and end
-    for (const auto& p : player)
-    {
-        if (get<0>(p) == 0)
-        {
-            playerBeginX = true;
-            playerStartMoves.push_back(convertToNode(matrixSize, p));
-        }
-
-        if (get<1>(p) == 0)
-        {
-            playerBeginY = true;
-            playerStartMoves.push_back(convertToNode(matrixSize, p));
-        }
-
-        if (get<0>(p) == matrixSize - 1)
-        {
-            playerEndX = true;
-            playerEndMoves.push_back(convertToNode(matrixSize, p));
-        }
-
-        if(get<1>(p) == matrixSize - 1)
-        {
-            playerEndY = true;
-            playerEndMoves.push_back(convertToNode(matrixSize, p));
-        }
-    }
-
-    for (const auto& c : computer)
-    {
-        if (get<0>(c) == 0)
-        {
-            computerBeginX = true;
-            computerStartMoves.push_back(convertToNode(matrixSize, c));
-        }
-
-        if (get<1>(c) == 0)
-        {
-            computerBeginY = true;
-            computerStartMoves.push_back(convertToNode(matrixSize, c));
-        }
-
-        if (get<0>(c) == matrixSize - 1)
-        {
-            computerEndX = true;
-            computerEndMoves.push_back(convertToNode(matrixSize, c));
-        }
-
-        if (get<1>(c) == matrixSize - 1)
-        {
-            computerEndY = true;
-            computerEndMoves.push_back(convertToNode(matrixSize, c));
-        }
-
-    }
-
-
-    //check if there is a possibility of a win starting with the first player
+    //checks if the player is a north-south player(BLACK) or an east-west player(RED) and stores values accordingly
     if (Hex::playerMode == Board::BLACK)
     {
-        if ((playerBeginX && playerEndX) || (playerBeginY && playerEndY))
+        //get all the moves played by both players and check if there's a move played at the beginning and end (the edges of the board)
+        for (const auto& p : playerMoves)
         {
-            if (Hex::checkLinked(playerStartMoves, playerEndMoves)) return Hex::playerMode;
+
+            if (get<0>(p) == 0)
+            {
+                playerBegin = true;
+                playerStartMoves.push_back(convertToNode(matrixSize, p));
+            }
+
+            else if (get<0>(p) == matrixSize - 1)
+            {
+                playerEnd = true;
+                playerEndMoves.push_back(convertToNode(matrixSize, p));
+            }
         }
 
-        if ((computerBeginX && computerEndX) || (computerBeginY && computerEndY))
+        for (const auto& c : computerMoves)
         {
-            if (Hex::checkLinked(computerStartMoves, computerEndMoves)) return Hex::computerMode;
+
+            if (get<1>(c) == 0)
+            {
+                computerBegin = true;
+                computerStartMoves.push_back(convertToNode(matrixSize, c));
+            }
+
+            else if (get<1>(c) == matrixSize - 1)
+            {
+                computerEnd = true;
+                computerEndMoves.push_back(convertToNode(matrixSize, c));
+            }
+
         }
     }
     else
     {
-        if ((computerBeginX && computerEndX) || (computerBeginY && computerEndY))
+        for (const auto& p : playerMoves)
         {
-            if (Hex::checkLinked(computerStartMoves, computerEndMoves)) return Hex::computerMode;
+            if (get<1>(p) == 0)
+            {
+                playerBegin = true;
+                playerStartMoves.push_back(convertToNode(matrixSize, p));
+            }
+            else if(get<1>(p) == matrixSize - 1)
+            {
+                playerEnd = true;
+                playerEndMoves.push_back(convertToNode(matrixSize, p));
+            }
         }
 
-        if ((playerBeginX && playerEndX) || (playerBeginY && playerEndY))
+        for (const auto&c : computerMoves)
         {
-           if (Hex::checkLinked(playerStartMoves, playerEndMoves)) return Hex::playerMode;
+            if (get<0>(c) == 0)
+            {
+                computerBegin = true;
+                computerStartMoves.push_back(convertToNode(matrixSize, c));
+            }
+
+            else if (get<0>(c) == matrixSize - 1)
+            {
+                computerEnd = true;
+                computerEndMoves.push_back(convertToNode(matrixSize, c));
+            }
         }
+
     }
 
 
+    //check if a player has won the game
+    if ((playerBegin && playerEnd))
+    {
+        if (Hex::checkLinked(game, playerStartMoves, playerEndMoves))
+            return Hex::playerMode;
+    }
+
+    if ((computerBegin && computerEnd))
+    {
+        if (Hex::checkLinked(game, computerStartMoves, computerEndMoves))
+            return Hex::computerMode;
+    }
 
     return Board::FREE;
 }
 
-//check if there's a path north-south or east-west for any player
-bool Hex::checkLinked(const vector<short>& playerStartMoves, const vector<short>& playerEndMoves)
+
+bool Hex::checkLinked(Hex& game, const vector<short>& playerStartMoves, const vector<short>& playerEndMoves)
 {
+    //convert the hex game to a graph to use the shortest path function
+    Graph gameGraph(static_cast<Graph>(game));
+
+    //find if there is any link between the moves from one end to another
     for (short startMove : playerStartMoves)
     {
        for (short endMove : playerEndMoves)
         {
-            if (shortestPath(*this, startMove, endMove) > 0)
+            if (shortestPath(gameGraph, startMove, endMove) > 0)
             {
                 return true;
             }
@@ -307,8 +347,95 @@ bool Hex::checkLinked(const vector<short>& playerStartMoves, const vector<short>
     return false;
 }
 
-
-Hex::~Hex()
+point Hex::computerPlay()
 {
-    //dtor
+    double highestProb = 0.0; //stores the highest probability of the computer wining
+    double newProb = 0.0; //stores the probability the computer winning after playing a certain move
+    short bestMove = 0; //stores the move the gives the highest probability of wining
+    point computerMove; //converts the best move to a point to store in computer moves
+
+    //get all the free moves on the board and calculate the possibility of a win if the computer plays that move
+    vector<short> possibleMoves(getPossibleMoves(Hex::moves));
+    for (short newMove : possibleMoves)
+    {
+        newProb = monteCarlo(newMove);
+
+        //get the highest probability and the best move
+        if (newProb > highestProb)
+        {
+            highestProb = newProb;
+            bestMove = newMove;
+        }
+    }
+
+
+    //add the best move to computer moves and return the value
+    computerMove = convertToPoint(matrixSize, bestMove);
+    Hex::addMove(*this, computerMode, computerMove);
+    return computerMove;
+}
+
+double Hex::monteCarlo(short newMove)
+{
+    short const TRIALS = 1500; // number of boards generated with random moves
+    short numWins = 0; //calculates the number of times the computer won
+
+    //create a new game adding all the previous moves of the computer and player
+    Hex newGame(*this);
+
+    //add the newMove to the computer moves
+    Hex::addMove(newGame, computerMode, convertToPoint(matrixSize, newMove));
+
+    //get all the possible moves and store them
+    vector<short> possibleMoves = getPossibleMoves(newGame.moves);
+    short freeMovesSize = possibleMoves.size();
+    short halfFreeMoves = freeMovesSize / 2;
+
+    //fill boards with random moves and compute the probability of a win with the new move
+    for (short i = 0; i < TRIALS; ++i)
+    {
+        //shuffle the moves and fill half with computer moves and the other half with player moves
+        shuffle(possibleMoves.begin(), possibleMoves.end(), default_random_engine(time(0)));
+
+        for (int j = 0; j < freeMovesSize; ++j)
+        {
+            if (j < halfFreeMoves)
+            {
+                Hex::addMove(newGame, playerMode, convertToPoint(matrixSize, possibleMoves[j]));
+            }
+            else
+            {
+                Hex::addMove(newGame, computerMode, convertToPoint(matrixSize, possibleMoves[j]));
+            }
+        }
+
+        //find out if the the computer won the game and update variables accordingly
+        if(whoWon(newGame, newGame.player, newGame.computer) == Hex::computerMode)
+        {
+            ++numWins;
+        }
+
+
+        //reset newGame to the initial game and add the new move
+        newGame = *this;
+        Hex::addMove(newGame, computerMode, convertToPoint(matrixSize, newMove));
+
+    }
+
+    //calculate the probability of a win and return the value
+    return (numWins*1.0)/TRIALS;
+
+}
+
+void Hex::operator=(const Hex& other)
+{
+    Graph::operator=(static_cast<Graph>(other));
+    Hex::hexNeighbours = other.hexNeighbours;
+    Hex::matrixSize = other.matrixSize;
+    Hex::playerMode = other.playerMode;
+    Hex::computerMode = other.computerMode;
+    Hex::hexHasEdge = other.hexHasEdge;
+    Hex::player = other.player;
+    Hex::computer = other.computer;
+    Hex::moves = other.moves;
 }

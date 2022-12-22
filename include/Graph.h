@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <array>
+#include <bits/stdc++.h>
 #include <ctime>
 #include <cassert>
 #include <iostream>
@@ -11,13 +12,16 @@
 #include <vector>
 
 using namespace std;
+template<class tree>
+short shortestPath(tree&, short, short);
 
 class Graph
 {
     public:
         //constructors
-        Graph(short int);
-        Graph(short, double);
+        Graph(int);
+        Graph(int, double);
+        Graph(const Graph&);
 
         //accessors
         inline short getTotalNodes() const{return totalNodes;} //returns the number of vertices
@@ -59,6 +63,9 @@ class Graph
         //returns the least cost it takes to go from one node to another using djikstra's algorithm
         //returns 0 if there is no path from node1 to node2
         friend short shortestPath(Graph&, short, short);
+
+        //copies the values of a graph to another graph
+        virtual void operator=(const Graph&);
 
         //Destructor
         virtual ~Graph();
@@ -106,7 +113,5 @@ class Graph
 
     private:
 };
-
-
 
 #endif // GRAPH_H

@@ -1,10 +1,8 @@
 #include "Graph.h"
 
-//using namespace std;
-
 const short int LEASTNODES = 50;
 
-Graph::Graph(short int nodes)
+Graph::Graph(int nodes)
 {
     if (nodes >= LEASTNODES)
     {
@@ -18,7 +16,7 @@ Graph::Graph(short int nodes)
 
 }
 
-Graph::Graph(short noNodes, double density)
+Graph::Graph(int noNodes, double density)
 {
     //set up the random generator
     uniform_real_distribution<double> u(0,1);
@@ -54,6 +52,13 @@ Graph::Graph(short noNodes, double density)
 
 }
 
+Graph::Graph(const Graph& other)
+{
+    this -> totalNodes = other.totalNodes;
+    this -> matrix = other.matrix;
+    this -> cost = other.cost;
+    this -> nodeValue = other.nodeValue;
+}
 short Graph::getNoEdges() const
 {
     short noEdges = 0; //counts the number of edges
@@ -238,7 +243,6 @@ Graph::~Graph()
     //dtor
 }
 
-
 short shortestPath(Graph& graph, short node1, short node2)
 {
     vector<bool> isOpen(graph.totalNodes, false);
@@ -257,7 +261,6 @@ short shortestPath(Graph& graph, short node1, short node2)
     {
         //get the neighbours of of the new parent node
         neighbour = graph.neighbours(parentNode);
-
         //add neighbours to the open set and priority queue if not in closed set
         addToOpen(graph, neighbour, newQueue, parentNode, isOpen, isClosed, parentNodes);
 
@@ -275,6 +278,8 @@ short shortestPath(Graph& graph, short node1, short node2)
         return 0;
 
 }
+
+
 
  //adds a list of edges connected to a node to the open set and priority queue
 void addToOpen(Graph& graph, vector<short>& neighbour, Graph::PriorityQueue& PQ, short parentNode, vector<bool>& isOpen, vector<bool>& isClosed, vector<short>& parentNodes)
@@ -302,3 +307,10 @@ void addToOpen(Graph& graph, vector<short>& neighbour, Graph::PriorityQueue& PQ,
     }
 }
 
+void Graph::operator=(const Graph& other)
+{
+    totalNodes = other.totalNodes;
+    matrix = other.matrix;
+    cost = other.cost;
+    nodeValue = other.nodeValue;
+}
